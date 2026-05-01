@@ -101,7 +101,9 @@ func mustRegister(ctx context.Context, client deadmanv1.HeartbeatClient, id, add
 		return
 	}
 	if !reply.Accepted {
-		log.Fatalf("monitor rejected registration: %s", reply.Reason)
+		// duplicate_worker_id is non-fatal: the monitor already knows about us
+		// (e.g. same Monitor passed in both --monitor and --pull-monitors).
+		log.Printf("register on this monitor not accepted: %s", reply.Reason)
 	}
 }
 
