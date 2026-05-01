@@ -67,20 +67,24 @@ A `--mode` flag on the Monitor selects which transport pattern runs:
 
 - `push` — Monitor accepts worker-initiated streams and does not run its poller.
 - `pull` — Monitor polls each registered worker via unary RPC and does not accept push streams.
-- `hybrid` — Monitor runs both: accepts pushes, and also polls every registered worker. The detector receives events from whichever transport produces them first; duplicate arrivals within `--eval-interval` are deduplicated by `(worker_id, seq)` for push and by ping reply for pull. Hybrid is intended for the side-by-side comparison run that produces the paper's bandwidth charts; it is not the recommended production setting.
+- `hybrid` — Monitor accepts push streams **and** polls every registered worker concurrently. Both transports record bytes-on-the-wire metrics, but **only the push stream feeds the Detector** (pull replies are recorded for bandwidth measurement and dropped before reaching the detector). This avoids doubling the effective heartbeat rate, which would halve μ and break Phi. Hybrid is a benchmarking convenience for producing the paper's bandwidth comparison in a single run; it is not the recommended production setting.
 
 Workers always run both endpoints. The Monitor decides which side initiates.
 
 ### Worker state machine
 
 ```
-ALIVE  ────(detector.Suspicion crosses Φ_missing)────►  MISSING
-MISSING ────(detector.Suspicion crosses Φ_dead)────►  DEAD
-MISSING ────(heartbeat received)────►  ALIVE
-DEAD    ────(worker re-registers)────►  ALIVE   (rejoin path; minimal)
+ALIVE   ────(detector.Suspicion ≥ Φ_missing at next eval)────►  MISSING
+MISSING ────(detector.Suspicion ≥ Φ_dead    at next eval)────►  DEAD
+MISSING ────(detector.Suspicion <  Φ_missing at next eval)────►  ALIVE
+DEAD    is terminal for the run. (Re-integration is out of scope.)
 ```
 
-`MISSING` is "haven't heard recently, but not yet declared dead". `DEAD` triggers a state-change log event and a red row in the TUI.
+**Transitions are driven only by `Suspicion()` polling at `--eval-interval`.** The `Heartbeat()` callback updates internal detector state (resets `last_arrival`, appends to the Phi sliding window) but never directly transitions the registry. Because both detectors compute suspicion from `elapsed = now - last_arrival`, an arriving heartbeat causes suspicion to drop to ~0 on the next eval, recovering MISSING → ALIVE naturally. There is no hysteresis: rapid flapping is possible if jitter sits exactly on Φ_missing, and the paper notes this as a known limitation.
+
+**Every transition is logged**, including MISSING → ALIVE recoveries. This is what lets the paper plot false-alarm rates per detector configuration.
+
+`MISSING` means "haven't heard recently, but not yet declared dead." `DEAD` triggers a state-change log event and a red row in the TUI.
 
 ## 4. gRPC Protocol
 
@@ -97,8 +101,10 @@ service Heartbeat {
   // Pull mode: monitor pings worker
   rpc Ping(PingRequest) returns (PingReply);
 
-  // Worker explicit register/deregister (used in pull mode so monitor knows
-  // who to poll; optional in push mode because the stream itself registers)
+  // Worker explicit register/deregister. Required in pull mode so the
+  // Monitor knows who to poll. Also called in push mode so the Monitor's
+  // registry is populated before the first heartbeat arrives — useful for
+  // the TUI and for rejecting duplicate worker_ids early.
   rpc Register(RegisterRequest) returns (RegisterReply);
 }
 
@@ -119,10 +125,12 @@ message PingReply    {
 }
 
 message RegisterRequest  { string worker_id = 1; string addr = 2; }
-message RegisterReply    { bool   accepted  = 1; int64 lease_ms = 2; }
+message RegisterReply    { bool   accepted  = 1; string reason = 2; }
 ```
 
-The `lease_ms` field is informational only — the Monitor returns its expected heartbeat interval so the worker can adjust. There is no lease-revocation protocol in this design.
+`accepted = false` with `reason = "duplicate_worker_id"` is the only rejection case in scope. There is no lease-revocation protocol in this design.
+
+**Codegen.** A `Makefile` target `make proto` runs `buf generate` (or `protoc`) and writes Go to `gen/deadman/v1/`. The generated files are committed so the project builds with plain `go build` and so a grader does not need `protoc` installed. `go.mod` pins `google.golang.org/grpc` and `google.golang.org/protobuf` to specific versions to keep the generated code consistent with the runtime.
 
 ### Push path
 
@@ -173,11 +181,16 @@ Multipliers `k_miss` and `k_dead` are exposed via `--miss-multiplier` and `--dea
 
 ### 5.2 Phi Accrual Detector
 
-Reference: Hayashibara et al., *The Φ Accrual Failure Detector* (2004). Used by Cassandra and Akka.
+Reference: Hayashibara et al., *The Φ Accrual Failure Detector* (2004). Both Akka and Cassandra ship implementations, but they use **different** distributional assumptions and therefore different closed-form approximations:
 
-Maintain a sliding window of the last `N` inter-arrival intervals (default `N = 1000`). Compute the running mean μ and standard deviation σ.
+- **Akka** (`akka.remote.PhiAccrualFailureDetector`) — assumes inter-arrival times are approximately **Normal** and uses a logistic polynomial approximation to the Normal CDF.
+- **Cassandra** (`org.apache.cassandra.gms.FailureDetector`) — assumes inter-arrival times are approximately **Exponential** and uses `phi = -log10( e / (1 + e) )` where `e = exp(-elapsed / μ)`.
 
-Phi formula (assumes inter-arrivals are approximately Normal):
+This design implements the **Akka (Normal) variant** because it is the more common pedagogical reference and the one whose math the assignment most directly evokes. The paper notes the Cassandra variant and the practical consequence: the same Φ_dead threshold means different things under the two models.
+
+Maintain a sliding window of the last `N` inter-arrival intervals (default `N = 1000`). Compute the running mean μ and standard deviation σ incrementally.
+
+Phi formula (Akka / Normal model):
 
 ```
 elapsed       = now - last_heartbeat
@@ -185,7 +198,7 @@ P_later(t)    = 1 - F(t)               where F is the CDF of Normal(μ, σ²)
 phi(t)        = -log10( P_later(t) )
 ```
 
-The production approximation used by Cassandra avoids `erfc`:
+Akka's production approximation avoids `erfc`:
 
 ```
 y       = (elapsed - μ) / σ
@@ -202,20 +215,30 @@ phi < Φ_dead      (default 8.0)   → MISSING
 phi ≥ Φ_dead                      → DEAD
 ```
 
-Φ = 1 means "roughly 10 % chance still alive". Φ = 8 means "roughly 10⁻⁸ chance still alive". Cassandra's default `phi_threshold` is 8.
+Φ = 1 means "roughly 10 % chance still alive." Φ = 8 means "roughly 10⁻⁸ chance still alive." Cassandra's default `phi_convict_threshold` is 8 under their **Exponential** model — that value is more conservative than 8 under the Normal model used here. The paper retains 8 as the default to match Cassandra's documented behavior, but the empirical-comparison section reports false-positive rate at Φ ∈ {3, 5, 8, 12} so the reader can see how the choice interacts with the distributional assumption.
 
-**Bootstrap problem.** The sliding window is empty until the first ~10 heartbeats arrive. While the window has fewer than `--phi-min-samples` observations, the detector falls back to the Fixed Window with `k_miss = 3`, `k_dead = 10` (the same defaults as `--miss-multiplier` / `--dead-multiplier`).
+**Bootstrap problem.** The sliding window is empty until the first ~10 heartbeats arrive. While the window has fewer than `--phi-min-samples` observations, the detector falls back to the Fixed Window with `k_miss = 3`, `k_dead = 10` (the same defaults as `--miss-multiplier` / `--dead-multiplier`). In **pull mode** the first inter-arrival sample requires *two* successful pings; the bootstrap window therefore covers the first `phi-min-samples + 1` poll cycles.
+
+**Late-arrival policy.** When a heartbeat finally arrives after a long gap (e.g., chaos-injected lag of several seconds), the inter-arrival sample *is* added to the sliding window unconditionally. This matches Akka's behavior. The consequence is that a single large lag spike inflates μ and σ, which makes the detector temporarily more tolerant of subsequent gaps — this is intentional: it lets Phi adapt to changing network conditions, and is exactly the behavior the paper compares against Fixed Window.
+
+**Window data structure.** Use a fixed-size `[]float64` of length `N` with a write index, and maintain running `sum` and `sum_of_squares` incrementally (subtract the evicted sample, add the new one). `container/ring` is **not** appropriate — it would cost an O(N) traversal on every `Suspicion()` call.
 
 ```go
 type PhiAccrual struct {
-    window        *ring.Ring   // last N intervals (float64 seconds)
-    n, minSamples int
-    lastArrival   time.Time
+    window        []float64    // length N, ring buffer with writeIdx
+    writeIdx, n   int
+    sum, sumSq    float64      // updated incrementally
+    minSamples    int
+    lastArrival   time.Time    // monotonic — see §5.4
     phiMissing    float64      // 1.0
     phiDead       float64      // 8.0
     fallback      *FixedWindow // used until window has min_samples
 }
 ```
+
+### 5.4 Clock discipline
+
+Both detectors compute `elapsed = now - last_arrival`. The implementation **must** use Go's monotonic clock: store `time.Now()` directly in `lastArrival` and compute elapsed via `time.Since(lastArrival)` or `now.Sub(lastArrival)` where both timestamps were produced by `time.Now()`. **Do not** reconstruct arrival times from the structured log's Unix-nanos field — that strips the monotonic reading and an NTP step during a benchmark would corrupt the Phi window.
 
 ### 5.3 Proposed formula (the paper deliverable)
 
@@ -307,6 +330,20 @@ Monitor.poller [goroutine per worker, every --poll-interval]:
 
 The detector treats both modes identically. Push fails closed (worker stops sending = no event = phi rises). Pull fails closed (RPC error = no event = phi rises).
 
+### 7.1 Structured log schema
+
+Every line in `--log-file` is one JSON object. Schema:
+
+```json
+{ "ts": "2026-04-30T14:30:01.234567Z", "type": "hb",        "worker": "worker-3", "seq": 42, "transport": "push|pull" }
+{ "ts": "...",                          "type": "ping_fail", "worker": "worker-3", "error": "DeadlineExceeded" }
+{ "ts": "...",                          "type": "state",     "worker": "worker-3", "from": "ALIVE", "to": "MISSING", "suspicion": 1.42, "detector": "phi" }
+{ "ts": "...",                          "type": "stream_close","worker": "worker-3", "error": "EOF" }
+{ "ts": "...",                          "type": "register",  "worker": "worker-3", "addr": "localhost:50061", "accepted": true }
+```
+
+`ts` is the Monitor's wall-clock time in RFC 3339 with nanosecond precision (used for charts only; detection still uses monotonic clock per §5.4). `plot.py` consumes this format.
+
 ## 8. Configuration
 
 ### Monitor flags
@@ -326,28 +363,32 @@ The detector treats both modes identically. Push fails closed (worker stops send
 --poll-timeout=500ms            pull mode: per-RPC deadline
 --eval-interval=200ms           how often state machine re-evaluated
 --log-file=events.jsonl         structured log
+--tui=true                      live TUI dashboard; pass --tui=false during benchmarks
 ```
 
 ### Worker flags
 
 ```
---id=worker-1                   logical name
---monitor=localhost:50051       Monitor addr (push mode)
---listen=:50061                 gRPC bind (pull mode)
---hb-interval=1s                push cadence
---chaos-crash-after=0           exit cleanly after N seconds (0 = never)
---chaos-kill-after=0            exit(1) immediately after N seconds (0 = never)
---chaos-lag-mean=0ms            inject latency before sending heartbeat
---chaos-lag-stddev=0ms          jitter
---chaos-drop-rate=0.0           probability of skipping a heartbeat
---chaos-pause-window=""         pause heartbeats for window (e.g., "60s:5s")
+--id=worker-1                          logical name
+--monitor=localhost:50051              primary Monitor addr (push target; also used for Register so the
+                                       worker is known to the Monitor regardless of mode)
+--pull-monitors=                       optional, comma-separated additional Monitor addrs that should
+                                       receive a Register and then poll this worker (used by demo to
+                                       run a parallel pull-mode Monitor against the same worker)
+--listen=:50061                        gRPC bind for Ping responder (pull mode)
+--hb-interval=1s                       push cadence
+--chaos-crash-after=0                  exit cleanly after N seconds (0 = never)
+--chaos-kill-after=0                   exit(1) immediately after N seconds (0 = never)
+--chaos-lag-mean=0ms                   inject latency before sending heartbeat (or before responding to Ping)
+--chaos-lag-stddev=0ms                 jitter (Normal noise around lag-mean)
+--chaos-drop-rate=0.0                  probability of skipping a heartbeat / dropping a Ping reply
 ```
 
 ## 9. Error Handling
 
 | Scenario | Push mode | Pull mode |
 |----------|-----------|-----------|
-| Worker crash | stream `Recv()` returns error → registry retains last_arrival, evaluator declares DEAD via detector | Ping returns connection-refused → no detector input → phi rises |
+| Worker crash | stream `Recv()` returns error → registry retains last_arrival, evaluator declares DEAD via detector. **The stream-close event is logged but is intentionally not fed to the Detector** — this keeps the detector mode-agnostic, since pull mode has no equivalent signal. The paper notes this as a deliberate trade-off (faster crash detection in push mode is achievable but would require a transport-aware detector). | Ping returns connection-refused → no detector input → phi rises |
 | Network blip | stream may reconnect (worker retries with exponential backoff, capped at 5s); detector sees a gap then resumes | Ping fails N times then succeeds; detector sees the same gap |
 | Monitor crash | workers retry connect on backoff. No persistence; registry is in-memory. | workers idle until Monitor returns. |
 | Slow heartbeat | Phi tolerates jitter; Fixed flags MISSING earlier. | Same. |
@@ -426,19 +467,32 @@ Color: ALIVE = green, MISSING = yellow, DEAD = red.
 
 ## 13. Demo Script
 
+The demo runs **two Monitors side-by-side** against the same set of Workers, so the contrast between Phi and Fixed is visible in real time. Each Monitor binds a different gRPC port and writes a separate log file. Workers connect only to the Phi monitor; the Fixed monitor runs in pull mode against the workers' `--listen` ports.
+
 ```bash
 #!/bin/bash
-# Spawn Monitor + 5 Workers.
-# worker-3 dies at t=20s (Phi declares DEAD within ~5–10s).
-# worker-4 has injected jitter; Phi tolerates, Fixed (k_dead=3) would falsely flag MISSING.
+# Spawn two Monitors + 5 Workers.
+#   monitor-phi   : push, Phi detector, default thresholds
+#   monitor-fixed : pull, Fixed detector with aggressive k_dead=3
+# worker-3 dies at t=20s   → both monitors should declare DEAD
+# worker-4 has heavy jitter → Fixed (k_dead=3) declares DEAD falsely; Phi does not.
 
-./monitor --mode=push --detector=phi --log-file=demo.jsonl &
+./monitor --listen=:50051 --mode=push --detector=phi --tui=false \
+          --log-file=demo-phi.jsonl &
+
+./monitor --listen=:50052 --mode=pull --detector=fixed \
+          --miss-multiplier=2 --dead-multiplier=3 \
+          --tui=false --log-file=demo-fixed.jsonl &
 sleep 1
-./worker --id=worker-1 --monitor=localhost:50051 &
-./worker --id=worker-2 --monitor=localhost:50051 &
-./worker --id=worker-3 --monitor=localhost:50051 --chaos-kill-after=20s &
-./worker --id=worker-4 --monitor=localhost:50051 --chaos-lag-mean=200ms --chaos-lag-stddev=80ms &
-./worker --id=worker-5 --monitor=localhost:50051 &
+
+# Workers register with both monitors. --monitor= is the push target;
+# --pull-monitors= is a comma-list of monitors that will Register & poll us.
+COMMON="--monitor=localhost:50051 --pull-monitors=localhost:50052 --listen-base=50061"
+./worker --id=worker-1 $COMMON &
+./worker --id=worker-2 $COMMON &
+./worker --id=worker-3 $COMMON --chaos-kill-after=20s &
+./worker --id=worker-4 $COMMON --chaos-lag-mean=2500ms --chaos-lag-stddev=1000ms &
+./worker --id=worker-5 $COMMON &
 wait
 ```
 
@@ -446,8 +500,9 @@ wait
 
 - `go build ./...` succeeds; both binaries are produced.
 - `go test ./...` passes.
-- Demo script runs end-to-end on macOS and Linux.
-- Phi detector never declares the jittery-but-alive worker DEAD over a 5-minute run.
-- Fixed detector with `k_dead = 3` flags the same jittery worker DEAD (false positive captured for the paper).
-- Benchmark produces CSV for N = 10, 100, 1000 workers in both modes.
+- Demo script runs end-to-end on macOS and Linux and produces two log files.
+- Phi monitor (Φ_dead = 8) does **not** declare `worker-4` DEAD over a 5-minute run despite injected lag of mean 2.5 s ± 1 s against a 1 s heartbeat interval.
+- Fixed monitor (`k_dead = 3`, i.e., `T_dead = 3 s`) declares `worker-4` DEAD at least once in the same run — the captured false positive that the paper compares against Phi.
+- Both monitors declare `worker-3` DEAD within 10 s of `--chaos-kill-after` firing at t = 20 s.
+- Benchmark produces CSV for N = 10, 100, 1000 workers in both push and pull modes, with `--tui=false`.
 - Paper file (`paper/dead-mans-switch.md`) contains all six sections plus charts generated from the structured log.
