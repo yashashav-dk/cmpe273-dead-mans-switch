@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package deadman.v1;
+
+option go_package = "github.com/yashashav/cmpe273-dead-mans-switch/gen/deadman/v1;deadmanv1";
+
+service Heartbeat {
+  // Push mode: worker streams heartbeats to monitor.
+  rpc StreamHeartbeats(stream HeartbeatMsg) returns (StreamAck);
+
+  // Pull mode: monitor pings worker.
+  rpc Ping(PingRequest) returns (PingReply);
+
+  // Worker register/deregister; required in pull mode and used in push mode
+  // to populate the registry before the first heartbeat lands.
+  rpc Register(RegisterRequest) returns (RegisterReply);
+}
+
+message HeartbeatMsg {
+  string worker_id        = 1;
+  int64  seq              = 2;
+  int64  sent_unix_nanos  = 3;
+  map<string, string> meta = 4;
+}
+
+message StreamAck { bool ok = 1; }
+
+message PingRequest {
+  int64 sent_unix_nanos = 1;
+}
+
+message PingReply {
+  string worker_id          = 1;
+  int64  sent_unix_nanos    = 2;
+  int64  worker_unix_nanos  = 3;
+}
+
+message RegisterRequest {
+  string worker_id = 1;
+  string addr      = 2;
+}
+
+message RegisterReply {
+  bool   accepted = 1;
+  string reason   = 2;
+}

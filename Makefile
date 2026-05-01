@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 GOFLAGS := -trimpath
-PROTO_FILES := proto/heartbeat.proto
+PROTO_FILES := proto/deadman/v1/heartbeat.proto
 
 .PHONY: all build proto test clean run-demo
 
