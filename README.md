@@ -2,6 +2,8 @@
 
 Heartbeat-based failure detection for distributed systems. Single Monitor process observes N Worker processes over gRPC. Compares **push vs pull** heartbeat transports and **Fixed Window vs Phi Accrual** failure detectors empirically.
 
+📄 **Paper:** [`paper/dead-mans-switch.md`](paper/dead-mans-switch.md) (renders inline on GitHub) · [PDF download](paper/dead-mans-switch.pdf)
+
 **Deliverable:** Go implementation + research paper at `paper/dead-mans-switch.md`. The paper cites empirical numbers measured by `bench.csv` and `phi_sweep.csv` in this repo.
 
 ---
