@@ -1,0 +1,16 @@
+# binaries
+/bin/
+/monitor
+/worker
+
+# logs and bench artifacts
+*.jsonl
+*.csv
+*.png
+!paper/figures/*.png
+
+# editor
+.idea/
+.vscode/
+*.swp
+.DS_Store
