@@ -1,0 +1,186 @@
+{"ts":"2026-05-01T08:36:31.223701Z","type":"register","worker":"worker-1","addr":"127.0.0.1:50061","accepted":true}
+{"ts":"2026-05-01T08:36:31.223768Z","type":"register","worker":"worker-3","addr":"127.0.0.1:50063","accepted":true}
+{"ts":"2026-05-01T08:36:31.223789Z","type":"register","worker":"worker-2","addr":"127.0.0.1:50062","accepted":true}
+{"ts":"2026-05-01T08:36:31.22384Z","type":"register","worker":"worker-4","addr":"127.0.0.1:50064","accepted":true}
+{"ts":"2026-05-01T08:36:31.223851Z","type":"register","worker":"worker-5","addr":"127.0.0.1:50065","accepted":true}
+{"ts":"2026-05-01T08:36:32.384127Z","type":"hb","worker":"worker-5","transport":"pull"}
+{"ts":"2026-05-01T08:36:32.384227Z","type":"hb","worker":"worker-3","transport":"pull"}
+{"ts":"2026-05-01T08:36:32.384301Z","type":"hb","worker":"worker-1","transport":"pull"}
+{"ts":"2026-05-01T08:36:32.386389Z","type":"hb","worker":"worker-2","transport":"pull"}
+{"ts":"2026-05-01T08:36:32.880188Z","type":"ping_fail","worker":"worker-4","error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+{"ts":"2026-05-01T08:36:33.374905Z","type":"state","worker":"worker-4","detector":"fixed","from":"ALIVE","to":"MISSING","suspicion":0.7169376526666666}
+{"ts":"2026-05-01T08:36:33.380025Z","type":"hb","worker":"worker-5","transport":"pull"}
+{"ts":"2026-05-01T08:36:33.381041Z","type":"hb","worker":"worker-2","transport":"pull"}
+{"ts":"2026-05-01T08:36:33.381078Z","type":"hb","worker":"worker-1","transport":"pull"}
+{"ts":"2026-05-01T08:36:33.381103Z","type":"hb","worker":"worker-3","transport":"pull"}
+{"ts":"2026-05-01T08:36:33.878368Z","type":"ping_fail","worker":"worker-4","error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+{"ts":"2026-05-01T08:36:34.376803Z","type":"state","worker":"worker-4","detector":"fixed","from":"MISSING","to":"DEAD","suspicion":1.0502589443333334}
+{"ts":"2026-05-01T08:36:34.37939Z","type":"hb","worker":"worker-3","transport":"pull"}
+{"ts":"2026-05-01T08:36:34.379405Z","type":"hb","worker":"worker-1","transport":"pull"}
+{"ts":"2026-05-01T08:36:34.379433Z","type":"hb","worker":"worker-2","transport":"pull"}
+{"ts":"2026-05-01T08:36:34.379453Z","type":"hb","worker":"worker-5","transport":"pull"}
+{"ts":"2026-05-01T08:36:34.878406Z","type":"ping_fail","worker":"worker-4","error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+{"ts":"2026-05-01T08:36:35.377621Z","type":"hb","worker":"worker-1","transport":"pull"}
+{"ts":"2026-05-01T08:36:35.37781Z","type":"hb","worker":"worker-3","transport":"pull"}
+{"ts":"2026-05-01T08:36:35.377829Z","type":"hb","worker":"worker-5","transport":"pull"}
+{"ts":"2026-05-01T08:36:35.377857Z","type":"hb","worker":"worker-2","transport":"pull"}
+{"ts":"2026-05-01T08:36:35.881154Z","type":"ping_fail","worker":"worker-4","error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+{"ts":"2026-05-01T08:36:36.378916Z","type":"hb","worker":"worker-3","transport":"pull"}
+{"ts":"2026-05-01T08:36:36.379065Z","type":"hb","worker":"worker-1","transport":"pull"}
+{"ts":"2026-05-01T08:36:36.379096Z","type":"hb","worker":"worker-5","transport":"pull"}
+{"ts":"2026-05-01T08:36:36.379131Z","type":"hb","worker":"worker-2","transport":"pull"}
+{"ts":"2026-05-01T08:36:36.879233Z","type":"ping_fail","worker":"worker-4","error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+{"ts":"2026-05-01T08:36:37.381746Z","type":"hb","worker":"worker-3","transport":"pull"}
+{"ts":"2026-05-01T08:36:37.381838Z","type":"hb","worker":"worker-5","transport":"pull"}
+{"ts":"2026-05-01T08:36:37.383005Z","type":"hb","worker":"worker-1","transport":"pull"}
+{"ts":"2026-05-01T08:36:37.383112Z","type":"hb","worker":"worker-2","transport":"pull"}
+{"ts":"2026-05-01T08:36:37.79458Z","type":"hb","worker":"worker-4","transport":"pull"}
+{"ts":"2026-05-01T08:36:37.97552Z","type":"state","worker":"worker-4","detector":"fixed","from":"DEAD","to":"ALIVE","suspicion":0.060033152666666666}
+{"ts":"2026-05-01T08:36:38.37804Z","type":"hb","worker":"worker-5","transport":"pull"}
+{"ts":"2026-05-01T08:36:38.378372Z","type":"hb","worker":"worker-2","transport":"pull"}
+{"ts":"2026-05-01T08:36:38.378342Z","type":"hb","worker":"worker-3","transport":"pull"}
+{"ts":"2026-05-01T08:36:38.378384Z","type":"hb","worker":"worker-1","transport":"pull"}
+{"ts":"2026-05-01T08:36:38.877597Z","type":"ping_fail","worker":"worker-4","error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+{"ts":"2026-05-01T08:36:39.378614Z","type":"hb","worker":"worker-5","transport":"pull"}
+{"ts":"2026-05-01T08:36:39.378674Z","type":"hb","worker":"worker-3","transport":"pull"}
+{"ts":"2026-05-01T08:36:39.379333Z","type":"hb","worker":"worker-1","transport":"pull"}
+{"ts":"2026-05-01T08:36:39.379374Z","type":"hb","worker":"worker-2","transport":"pull"}
+{"ts":"2026-05-01T08:36:39.877367Z","type":"ping_fail","worker":"worker-4","error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+{"ts":"2026-05-01T08:36:39.975883Z","type":"state","worker":"worker-4","detector":"fixed","from":"ALIVE","to":"MISSING","suspicion":0.726685736}
+{"ts":"2026-05-01T08:36:40.378613Z","type":"hb","worker":"worker-2","transport":"pull"}
+{"ts":"2026-05-01T08:36:40.378653Z","type":"hb","worker":"worker-5","transport":"pull"}
+{"ts":"2026-05-01T08:36:40.378678Z","type":"hb","worker":"worker-3","transport":"pull"}
+{"ts":"2026-05-01T08:36:40.378665Z","type":"hb","worker":"worker-1","transport":"pull"}
+{"ts":"2026-05-01T08:36:40.880384Z","type":"ping_fail","worker":"worker-4","error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+{"ts":"2026-05-01T08:36:40.977852Z","type":"state","worker":"worker-4","detector":"fixed","from":"MISSING","to":"DEAD","suspicion":1.06001925}
+{"ts":"2026-05-01T08:36:41.380082Z","type":"hb","worker":"worker-5","transport":"pull"}
+{"ts":"2026-05-01T08:36:41.382875Z","type":"hb","worker":"worker-2","transport":"pull"}
+{"ts":"2026-05-01T08:36:41.382908Z","type":"hb","worker":"worker-3","transport":"pull"}
+{"ts":"2026-05-01T08:36:41.384431Z","type":"hb","worker":"worker-1","transport":"pull"}
+{"ts":"2026-05-01T08:36:41.877268Z","type":"ping_fail","worker":"worker-4","error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+{"ts":"2026-05-01T08:36:42.377992Z","type":"hb","worker":"worker-3","transport":"pull"}
+{"ts":"2026-05-01T08:36:42.378057Z","type":"hb","worker":"worker-5","transport":"pull"}
+{"ts":"2026-05-01T08:36:42.378092Z","type":"hb","worker":"worker-1","transport":"pull"}
+{"ts":"2026-05-01T08:36:42.378139Z","type":"hb","worker":"worker-2","transport":"pull"}
+{"ts":"2026-05-01T08:36:42.877583Z","type":"ping_fail","worker":"worker-4","error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+{"ts":"2026-05-01T08:36:43.383504Z","type":"hb","worker":"worker-5","transport":"pull"}
+{"ts":"2026-05-01T08:36:43.383548Z","type":"hb","worker":"worker-2","transport":"pull"}
+{"ts":"2026-05-01T08:36:43.383565Z","type":"hb","worker":"worker-1","transport":"pull"}
+{"ts":"2026-05-01T08:36:43.383579Z","type":"hb","worker":"worker-3","transport":"pull"}
+{"ts":"2026-05-01T08:36:43.88154Z","type":"ping_fail","worker":"worker-4","error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+{"ts":"2026-05-01T08:36:44.381894Z","type":"hb","worker":"worker-2","transport":"pull"}
+{"ts":"2026-05-01T08:36:44.381978Z","type":"hb","worker":"worker-5","transport":"pull"}
+{"ts":"2026-05-01T08:36:44.382077Z","type":"hb","worker":"worker-3","transport":"pull"}
+{"ts":"2026-05-01T08:36:44.382574Z","type":"hb","worker":"worker-1","transport":"pull"}
+{"ts":"2026-05-01T08:36:44.878852Z","type":"ping_fail","worker":"worker-4","error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+{"ts":"2026-05-01T08:36:45.378217Z","type":"hb","worker":"worker-5","transport":"pull"}
+{"ts":"2026-05-01T08:36:45.378305Z","type":"hb","worker":"worker-2","transport":"pull"}
+{"ts":"2026-05-01T08:36:45.37823Z","type":"hb","worker":"worker-1","transport":"pull"}
+{"ts":"2026-05-01T08:36:45.378492Z","type":"hb","worker":"worker-3","transport":"pull"}
+{"ts":"2026-05-01T08:36:45.877402Z","type":"ping_fail","worker":"worker-4","error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+{"ts":"2026-05-01T08:36:46.377593Z","type":"hb","worker":"worker-5","transport":"pull"}
+{"ts":"2026-05-01T08:36:46.377649Z","type":"hb","worker":"worker-2","transport":"pull"}
+{"ts":"2026-05-01T08:36:46.37767Z","type":"hb","worker":"worker-3","transport":"pull"}
+{"ts":"2026-05-01T08:36:46.377723Z","type":"hb","worker":"worker-1","transport":"pull"}
+{"ts":"2026-05-01T08:36:46.877412Z","type":"ping_fail","worker":"worker-4","error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+{"ts":"2026-05-01T08:36:47.377258Z","type":"hb","worker":"worker-3","transport":"pull"}
+{"ts":"2026-05-01T08:36:47.377274Z","type":"hb","worker":"worker-5","transport":"pull"}
+{"ts":"2026-05-01T08:36:47.377274Z","type":"hb","worker":"worker-1","transport":"pull"}
+{"ts":"2026-05-01T08:36:47.377266Z","type":"hb","worker":"worker-2","transport":"pull"}
+{"ts":"2026-05-01T08:36:47.877182Z","type":"ping_fail","worker":"worker-4","error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+{"ts":"2026-05-01T08:36:48.377408Z","type":"hb","worker":"worker-1","transport":"pull"}
+{"ts":"2026-05-01T08:36:48.377417Z","type":"hb","worker":"worker-2","transport":"pull"}
+{"ts":"2026-05-01T08:36:48.377417Z","type":"hb","worker":"worker-5","transport":"pull"}
+{"ts":"2026-05-01T08:36:48.377434Z","type":"hb","worker":"worker-3","transport":"pull"}
+{"ts":"2026-05-01T08:36:48.877374Z","type":"ping_fail","worker":"worker-4","error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+{"ts":"2026-05-01T08:36:49.377381Z","type":"hb","worker":"worker-1","transport":"pull"}
+{"ts":"2026-05-01T08:36:49.377374Z","type":"hb","worker":"worker-3","transport":"pull"}
+{"ts":"2026-05-01T08:36:49.37741Z","type":"hb","worker":"worker-5","transport":"pull"}
+{"ts":"2026-05-01T08:36:49.377397Z","type":"hb","worker":"worker-2","transport":"pull"}
+{"ts":"2026-05-01T08:36:49.877371Z","type":"ping_fail","worker":"worker-4","error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+{"ts":"2026-05-01T08:36:50.377453Z","type":"hb","worker":"worker-2","transport":"pull"}
+{"ts":"2026-05-01T08:36:50.377458Z","type":"hb","worker":"worker-5","transport":"pull"}
+{"ts":"2026-05-01T08:36:50.377455Z","type":"hb","worker":"worker-3","transport":"pull"}
+{"ts":"2026-05-01T08:36:50.377478Z","type":"hb","worker":"worker-1","transport":"pull"}
+{"ts":"2026-05-01T08:36:50.877383Z","type":"ping_fail","worker":"worker-4","error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+{"ts":"2026-05-01T08:36:51.377472Z","type":"ping_fail","worker":"worker-3","error":"rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp 127.0.0.1:50063: connect: connection refused\""}
+{"ts":"2026-05-01T08:36:51.377475Z","type":"hb","worker":"worker-5","transport":"pull"}
+{"ts":"2026-05-01T08:36:51.377492Z","type":"hb","worker":"worker-1","transport":"pull"}
+{"ts":"2026-05-01T08:36:51.377528Z","type":"hb","worker":"worker-2","transport":"pull"}
+{"ts":"2026-05-01T08:36:51.877458Z","type":"ping_fail","worker":"worker-4","error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+{"ts":"2026-05-01T08:36:52.377147Z","type":"ping_fail","worker":"worker-3","error":"rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp 127.0.0.1:50063: connect: connection refused\""}
+{"ts":"2026-05-01T08:36:52.377383Z","type":"hb","worker":"worker-5","transport":"pull"}
+{"ts":"2026-05-01T08:36:52.377384Z","type":"hb","worker":"worker-1","transport":"pull"}
+{"ts":"2026-05-01T08:36:52.377395Z","type":"hb","worker":"worker-2","transport":"pull"}
+{"ts":"2026-05-01T08:36:52.575298Z","type":"state","worker":"worker-3","detector":"fixed","from":"ALIVE","to":"MISSING","suspicion":0.732400847}
+{"ts":"2026-05-01T08:36:52.877373Z","type":"ping_fail","worker":"worker-4","error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+{"ts":"2026-05-01T08:36:53.377209Z","type":"ping_fail","worker":"worker-3","error":"rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp 127.0.0.1:50063: connect: connection refused\""}
+{"ts":"2026-05-01T08:36:53.377367Z","type":"hb","worker":"worker-1","transport":"pull"}
+{"ts":"2026-05-01T08:36:53.377372Z","type":"hb","worker":"worker-2","transport":"pull"}
+{"ts":"2026-05-01T08:36:53.377376Z","type":"hb","worker":"worker-5","transport":"pull"}
+{"ts":"2026-05-01T08:36:53.575697Z","type":"state","worker":"worker-3","detector":"fixed","from":"MISSING","to":"DEAD","suspicion":1.0657387913333334}
+{"ts":"2026-05-01T08:36:53.877361Z","type":"ping_fail","worker":"worker-4","error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+{"ts":"2026-05-01T08:36:54.377145Z","type":"ping_fail","worker":"worker-3","error":"rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp 127.0.0.1:50063: connect: connection refused\""}
+{"ts":"2026-05-01T08:36:54.377362Z","type":"hb","worker":"worker-1","transport":"pull"}
+{"ts":"2026-05-01T08:36:54.377368Z","type":"hb","worker":"worker-2","transport":"pull"}
+{"ts":"2026-05-01T08:36:54.377388Z","type":"hb","worker":"worker-5","transport":"pull"}
+{"ts":"2026-05-01T08:36:54.877349Z","type":"ping_fail","worker":"worker-4","error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+{"ts":"2026-05-01T08:36:55.377178Z","type":"ping_fail","worker":"worker-3","error":"rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp 127.0.0.1:50063: connect: connection refused\""}
+{"ts":"2026-05-01T08:36:55.377406Z","type":"hb","worker":"worker-5","transport":"pull"}
+{"ts":"2026-05-01T08:36:55.377417Z","type":"hb","worker":"worker-2","transport":"pull"}
+{"ts":"2026-05-01T08:36:55.377419Z","type":"hb","worker":"worker-1","transport":"pull"}
+{"ts":"2026-05-01T08:36:55.877335Z","type":"ping_fail","worker":"worker-4","error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+{"ts":"2026-05-01T08:36:56.377182Z","type":"ping_fail","worker":"worker-3","error":"rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp 127.0.0.1:50063: connect: connection refused\""}
+{"ts":"2026-05-01T08:36:56.377359Z","type":"hb","worker":"worker-2","transport":"pull"}
+{"ts":"2026-05-01T08:36:56.37737Z","type":"hb","worker":"worker-1","transport":"pull"}
+{"ts":"2026-05-01T08:36:56.377372Z","type":"hb","worker":"worker-5","transport":"pull"}
+{"ts":"2026-05-01T08:36:56.877346Z","type":"ping_fail","worker":"worker-4","error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+{"ts":"2026-05-01T08:36:57.377116Z","type":"ping_fail","worker":"worker-3","error":"rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp 127.0.0.1:50063: connect: connection refused\""}
+{"ts":"2026-05-01T08:36:57.377343Z","type":"hb","worker":"worker-5","transport":"pull"}
+{"ts":"2026-05-01T08:36:57.377353Z","type":"hb","worker":"worker-1","transport":"pull"}
+{"ts":"2026-05-01T08:36:57.377359Z","type":"hb","worker":"worker-2","transport":"pull"}
+{"ts":"2026-05-01T08:36:57.87728Z","type":"ping_fail","worker":"worker-4","error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+{"ts":"2026-05-01T08:36:58.377172Z","type":"ping_fail","worker":"worker-3","error":"rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp 127.0.0.1:50063: connect: connection refused\""}
+{"ts":"2026-05-01T08:36:58.377402Z","type":"hb","worker":"worker-5","transport":"pull"}
+{"ts":"2026-05-01T08:36:58.377429Z","type":"hb","worker":"worker-2","transport":"pull"}
+{"ts":"2026-05-01T08:36:58.377446Z","type":"hb","worker":"worker-1","transport":"pull"}
+{"ts":"2026-05-01T08:36:58.877476Z","type":"ping_fail","worker":"worker-4","error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+{"ts":"2026-05-01T08:36:59.37721Z","type":"ping_fail","worker":"worker-3","error":"rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp 127.0.0.1:50063: connect: connection refused\""}
+{"ts":"2026-05-01T08:36:59.377451Z","type":"hb","worker":"worker-5","transport":"pull"}
+{"ts":"2026-05-01T08:36:59.377455Z","type":"hb","worker":"worker-1","transport":"pull"}
+{"ts":"2026-05-01T08:36:59.377503Z","type":"hb","worker":"worker-2","transport":"pull"}
+{"ts":"2026-05-01T08:36:59.87739Z","type":"ping_fail","worker":"worker-4","error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+{"ts":"2026-05-01T08:37:00.377188Z","type":"ping_fail","worker":"worker-3","error":"rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp 127.0.0.1:50063: connect: connection refused\""}
+{"ts":"2026-05-01T08:37:00.377387Z","type":"hb","worker":"worker-1","transport":"pull"}
+{"ts":"2026-05-01T08:37:00.377397Z","type":"hb","worker":"worker-5","transport":"pull"}
+{"ts":"2026-05-01T08:37:00.377421Z","type":"hb","worker":"worker-2","transport":"pull"}
+{"ts":"2026-05-01T08:37:00.877457Z","type":"ping_fail","worker":"worker-4","error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+{"ts":"2026-05-01T08:37:01.377261Z","type":"ping_fail","worker":"worker-3","error":"rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp 127.0.0.1:50063: connect: connection refused\""}
+{"ts":"2026-05-01T08:37:01.377619Z","type":"hb","worker":"worker-1","transport":"pull"}
+{"ts":"2026-05-01T08:37:01.377705Z","type":"hb","worker":"worker-5","transport":"pull"}
+{"ts":"2026-05-01T08:37:01.377778Z","type":"hb","worker":"worker-2","transport":"pull"}
+{"ts":"2026-05-01T08:37:01.877537Z","type":"ping_fail","worker":"worker-4","error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+{"ts":"2026-05-01T08:37:02.377158Z","type":"ping_fail","worker":"worker-3","error":"rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp 127.0.0.1:50063: connect: connection refused\""}
+{"ts":"2026-05-01T08:37:02.377435Z","type":"hb","worker":"worker-2","transport":"pull"}
+{"ts":"2026-05-01T08:37:02.377435Z","type":"hb","worker":"worker-5","transport":"pull"}
+{"ts":"2026-05-01T08:37:02.377441Z","type":"hb","worker":"worker-1","transport":"pull"}
+{"ts":"2026-05-01T08:37:02.877407Z","type":"ping_fail","worker":"worker-4","error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+{"ts":"2026-05-01T08:37:03.377149Z","type":"ping_fail","worker":"worker-3","error":"rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp 127.0.0.1:50063: connect: connection refused\""}
+{"ts":"2026-05-01T08:37:03.377407Z","type":"hb","worker":"worker-5","transport":"pull"}
+{"ts":"2026-05-01T08:37:03.377419Z","type":"hb","worker":"worker-2","transport":"pull"}
+{"ts":"2026-05-01T08:37:03.377407Z","type":"hb","worker":"worker-1","transport":"pull"}
+{"ts":"2026-05-01T08:37:03.87734Z","type":"ping_fail","worker":"worker-4","error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+{"ts":"2026-05-01T08:37:04.37718Z","type":"ping_fail","worker":"worker-3","error":"rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp 127.0.0.1:50063: connect: connection refused\""}
+{"ts":"2026-05-01T08:37:04.377374Z","type":"hb","worker":"worker-1","transport":"pull"}
+{"ts":"2026-05-01T08:37:04.377422Z","type":"hb","worker":"worker-5","transport":"pull"}
+{"ts":"2026-05-01T08:37:04.377481Z","type":"hb","worker":"worker-2","transport":"pull"}
+{"ts":"2026-05-01T08:37:04.877373Z","type":"ping_fail","worker":"worker-4","error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+{"ts":"2026-05-01T08:37:05.377159Z","type":"ping_fail","worker":"worker-3","error":"rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp 127.0.0.1:50063: connect: connection refused\""}
+{"ts":"2026-05-01T08:37:05.377385Z","type":"hb","worker":"worker-5","transport":"pull"}
+{"ts":"2026-05-01T08:37:05.377389Z","type":"hb","worker":"worker-2","transport":"pull"}
+{"ts":"2026-05-01T08:37:05.37752Z","type":"hb","worker":"worker-1","transport":"pull"}
+{"ts":"2026-05-01T08:37:05.87739Z","type":"ping_fail","worker":"worker-4","error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+{"ts":"2026-05-01T08:37:06.377158Z","type":"ping_fail","worker":"worker-3","error":"rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp 127.0.0.1:50063: connect: connection refused\""}
+{"ts":"2026-05-01T08:37:06.377413Z","type":"hb","worker":"worker-5","transport":"pull"}
+{"ts":"2026-05-01T08:37:06.377512Z","type":"hb","worker":"worker-2","transport":"pull"}
+{"ts":"2026-05-01T08:37:06.377527Z","type":"hb","worker":"worker-1","transport":"pull"}

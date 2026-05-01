@@ -8,6 +8,7 @@
 *.csv
 *.png
 !paper/figures/*.png
+!paper/data/*.jsonl
 
 # editor
 .idea/
@@ -15,5 +16,5 @@
 *.swp
 .DS_Store
 
-# Claude Code per-session memory (not project code)
+# local per-session memory (not project code)
 /memory/

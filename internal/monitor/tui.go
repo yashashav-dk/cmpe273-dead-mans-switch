@@ -96,3 +96,16 @@ func (m tuiModel) View() string {
 func tickCmd(d time.Duration) tea.Cmd {
 	return tea.Tick(d, func(t time.Time) tea.Msg { return tickMsg(t) })
 }
+
+// RenderFrame produces a single, non-interactive TUI frame for documentation
+// snapshots and tests. It does not write to the terminal — caller decides
+// where the string goes.
+func RenderFrame(reg *Registry, mode, detName string, uptime time.Duration) string {
+	m := tuiModel{
+		reg:     reg,
+		mode:    mode,
+		det:     detName,
+		started: time.Now().Add(-uptime),
+	}
+	return m.View()
+}
