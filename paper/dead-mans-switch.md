@@ -38,7 +38,7 @@ Our benchmark sweeps N ∈ {10, 100, 1000} for both modes and reports Monitor pe
 
 ![Monitor RSS vs N](figures/rss.png)
 
-The interesting finding is that bandwidth is essentially indistinguishable between push and pull because the heartbeat payload is tiny in both directions. The differences live in the per-connection accounting on the Monitor.
+The headline finding is that, at N = 1000, push consumes ~3× less Monitor RSS than pull because pull holds an outbound stub-and-conn per worker, while push reuses one inbound stream. Per-tick wire bytes are similar in both directions; the differences are in per-connection accounting and per-poll context allocation on the Monitor.
 
 ### 2.4 Behind a firewall
 
@@ -103,11 +103,13 @@ The detector's interface is transport-agnostic: it sees only `(workerID, arrival
 
 ## 5. Results
 
-(Charts above.) The headline numbers, as observed on a single MacBook Pro (M-series, macOS 14):
+(Charts above.) The headline numbers, as observed on a single MacBook Pro (M-series, macOS):
 
-- Detection latency at N = 1000 differs by < 200 ms between push and pull.
-- Monitor RSS at N = 1000 is dominated by gRPC's per-stream allocation; pull is slightly lower because there is no long-lived stream state.
-- Phi never declares the jittery-but-alive worker dead; Fixed Window with `k_dead = 3` declares it dead within 30 seconds in every run.
+- Detection latency at N = 1000: push/Phi = 1186 ms, push/Fixed = 9910 ms, pull/Phi = 642 ms, pull/Fixed = 9833 ms. Phi fires earlier than Fixed because tight σ on steady arrivals lets phi exceed Φ_dead well before `k_dead × hb_interval` elapses.
+- Monitor RSS at N = 1000 is materially higher under pull (196 MB) than push (76 MB); pull holds one outbound `*grpc.ClientConn` per worker plus per-poll context state, while push reuses one inbound stream per worker.
+- Phi never declares the jittery-but-alive worker dead; Fixed Window with `k_dead = 3` declares it dead within 30 seconds in every run (see `demo-fixed.jsonl`).
+
+Raw bench data: `bench.csv` (12 rows, N ∈ {10, 100, 1000}, mode ∈ {push, pull}, detector ∈ {phi, fixed}).
 
 ## 6. Conclusion
 

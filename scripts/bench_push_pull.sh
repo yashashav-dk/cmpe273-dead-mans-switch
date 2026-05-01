@@ -34,8 +34,11 @@ run_one() {
     if (( i % 50 == 0 )); then sleep 0.2; fi
   done
 
-  # Warm up
-  sleep 8
+  # Warm up. Must exceed phi-min-samples × hb-interval (10s default) so the
+  # PhiAccrual sliding window is populated before the kill — otherwise pull
+  # mode's bootstrap fallback declares DEAD prematurely and the latency we
+  # measure is not phi's verdict.
+  sleep 15
 
   # Kill worker bw-1 and time the DEAD transition.
   local kill_time
