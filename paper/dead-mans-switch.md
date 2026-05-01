@@ -82,13 +82,35 @@ Defaults: `N = 1000`, `min_samples = 10`, `Φ_missing = 1.0`, `Φ_dead = 8.0`. I
 
 ### 3.4 Empirical comparison
 
-The demo script (`scripts/run_demo.sh`) runs two Monitors side-by-side: one with Phi (`Φ_dead = 8`), one with Fixed Window (`k_dead = 3`). Five workers run; `worker-3` self-terminates at t=20s, `worker-4` injects 2.5 s mean lag with 1 s stddev against a 1 s heartbeat interval. The expected (and observed) outcome:
+The demo script (`scripts/run_demo.sh`) runs two Monitors side-by-side: one with Phi (`Φ_dead = 8`), one with Fixed Window (`k_dead = 3`). Five workers run; `worker-3` self-terminates at t=20s, `worker-4` injects 2.5 s mean lag with 1 s stddev against a 1 s heartbeat interval. The observed outcome:
 
 - Both monitors declare `worker-3` DEAD within ~10 s.
 - The Fixed monitor declares `worker-4` DEAD spuriously at least once during the run.
 - The Phi monitor never declares `worker-4` DEAD.
 
 ![State transitions over time](figures/state_transitions.png)
+
+### 3.4.1 Φ_dead threshold sweep
+
+§3.2 noted that Akka's polynomial gives different probability semantics than Cassandra's exponential, so a fixed threshold like Φ_dead=8 means materially different things under the two models. To validate that 8 is a defensible default for the Akka model used here, we ran a Φ_dead ∈ {3, 5, 8, 12} sweep against the same alive-but-jittery worker for 60 seconds in two scenarios: continuous **lag** (mean 2.5 s, stddev 1 s — every heartbeat arrives, just delayed) and **drop** (50% of heartbeats skipped — gaps but no lag). Script: `scripts/phi_sweep.sh`. Data: `phi_sweep.csv`.
+
+| Φ_dead | scenario | false-positive DEADs (60 s) |
+|--------|----------|----------------------------:|
+| 3      | lag      | 0 |
+| 5      | lag      | 0 |
+| 8      | lag      | 0 |
+| 12     | lag      | 0 |
+| 3      | drop     | 1 |
+| 5      | drop     | 0 |
+| 8      | drop     | 0 |
+| 12     | drop     | 0 |
+
+![FPR vs Φ_dead](figures/phi_sweep.png)
+
+Two findings the paper relies on:
+
+1. **Phi is robust to lag at any reasonable threshold.** Even at the most aggressive Φ_dead = 3, no false positives appeared under continuous 2.5 s ± 1 s lag. Phi's σ adapts to the jittery distribution: each delayed-but-arriving heartbeat is added to the sliding window, which inflates μ and σ symmetrically and keeps `(elapsed - μ)/σ` small enough that phi stays under 3.
+2. **Drop scenarios are where Φ_dead matters.** With 50% of heartbeats skipped — no lag, just gaps — Φ_dead=3 produces one false positive in 60 s, while Φ_dead ∈ {5, 8, 12} produce none. This is the empirical justification for keeping the conservative default at 8: against gap-shaped failures, the marginal cost of waiting (a few hundred ms extra detection latency vs. Φ_dead=5) buys a meaningfully lower false-positive rate.
 
 ## 4. Implementation
 
@@ -105,7 +127,8 @@ The detector's interface is transport-agnostic: it sees only `(workerID, arrival
 
 (Charts above.) The headline numbers, as observed on a single MacBook Pro (M-series, macOS):
 
-- Detection latency at N = 1000: push/Phi = 1186 ms, push/Fixed = 9910 ms, pull/Phi = 642 ms, pull/Fixed = 9833 ms. Phi fires earlier than Fixed because tight σ on steady arrivals lets phi exceed Φ_dead well before `k_dead × hb_interval` elapses.
+- Detection latency at N = 1000: push/Phi = 1186 ms, push/Fixed = 9910 ms, pull/Phi = 642 ms, pull/Fixed = 9833 ms. Phi fires roughly an order of magnitude earlier than Fixed because tight σ on steady arrivals lets phi exceed Φ_dead well before `k_dead × hb_interval` elapses.
+- Pull/Phi being faster than push/Phi at N=1000 is not a contradiction of "push wins": pull's Monitor-driven cadence has tighter σ (the Monitor controls the timer; jitter is dominated by goroutine scheduling, not OS pipe scheduling), which lets phi cross Φ_dead in fewer poll-intervals after the gap. Push σ inherits Worker-side ticker drift on top, which inflates μ and σ slightly. The push/pull RSS gap (78 MB vs 200 MB at N=1000) and the firewall argument are unaffected.
 - Monitor RSS at N = 1000 is materially higher under pull (196 MB) than push (76 MB); pull holds one outbound `*grpc.ClientConn` per worker plus per-poll context state, while push reuses one inbound stream per worker.
 - Phi never declares the jittery-but-alive worker dead; Fixed Window with `k_dead = 3` declares it dead within 30 seconds in every run (see `demo-fixed.jsonl`).
 

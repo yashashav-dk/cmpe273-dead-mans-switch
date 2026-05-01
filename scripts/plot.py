@@ -10,6 +10,7 @@ Usage:
   scripts/plot.py --csv bench.csv --log demo-phi.jsonl --outdir paper/figures
 """
 import argparse
+import csv
 import json
 import os
 from collections import defaultdict
@@ -117,10 +118,40 @@ def plot_state_transitions(log_path, outpath):
     plt.close()
 
 
+def plot_phi_sweep(csv_path, outpath):
+    rows = []
+    with open(csv_path) as f:
+        for r in csv.DictReader(f):
+            r["phi_dead"] = int(r["phi_dead"])
+            r["worker4_false_dead_count"] = int(r["worker4_false_dead_count"])
+            rows.append(r)
+
+    scenarios = sorted({r["scenario"] for r in rows})
+    phis = sorted({r["phi_dead"] for r in rows})
+
+    width = 0.35
+    x = list(range(len(phis)))
+    plt.figure()
+    for i, sc in enumerate(scenarios):
+        ys = [next(r["worker4_false_dead_count"] for r in rows
+                   if r["phi_dead"] == p and r["scenario"] == sc) for p in phis]
+        offsets = [xi + (i - (len(scenarios)-1)/2) * width for xi in x]
+        plt.bar(offsets, ys, width=width, label=f"scenario={sc}")
+    plt.xticks(x, [str(p) for p in phis])
+    plt.xlabel("Φ_dead threshold")
+    plt.ylabel("false-positive DEAD count (60s window)")
+    plt.title("Phi false-positive rate vs Φ_dead\n(jittery-but-alive worker)")
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(outpath)
+    plt.close()
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--csv", default="bench.csv")
     ap.add_argument("--log", default="demo-phi.jsonl")
+    ap.add_argument("--phi-csv", default="phi_sweep.csv")
     ap.add_argument("--outdir", default="paper/figures")
     args = ap.parse_args()
 
@@ -131,6 +162,8 @@ def main():
         plot_rss(rows, os.path.join(args.outdir, "rss.png"))
     if os.path.exists(args.log):
         plot_state_transitions(args.log, os.path.join(args.outdir, "state_transitions.png"))
+    if os.path.exists(args.phi_csv):
+        plot_phi_sweep(args.phi_csv, os.path.join(args.outdir, "phi_sweep.png"))
     print("done")
 
 

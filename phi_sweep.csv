@@ -1,0 +1,9 @@
+phi_dead,scenario,worker4_false_dead_count,worker4_to_missing_count
+3,lag,0,4
+5,lag,0,4
+8,lag,0,4
+12,lag,0,4
+3,drop,1,3
+5,drop,0,3
+8,drop,0,1
+12,drop,0,2
