@@ -28,11 +28,15 @@ func NewServer(reg *Registry, det detector.Detector, log *eventlog.Logger) *Serv
 }
 
 // Register adds the worker to the registry. Duplicate worker_ids are rejected.
+// On accept, seed the Detector with a heartbeat at Register time so the first
+// evaluator tick sees a recent arrival rather than declaring the worker DEAD
+// before its first heartbeat lands.
 func (s *Server) Register(ctx context.Context, req *deadmanv1.RegisterRequest) (*deadmanv1.RegisterReply, error) {
 	ok := s.reg.Register(req.WorkerId, req.Addr)
 	if !ok {
 		return &deadmanv1.RegisterReply{Accepted: false, Reason: "duplicate_worker_id"}, nil
 	}
+	s.det.Heartbeat(req.WorkerId, time.Now())
 	return &deadmanv1.RegisterReply{Accepted: true}, nil
 }
 
