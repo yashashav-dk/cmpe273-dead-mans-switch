@@ -274,8 +274,8 @@ cmpe273-dead-mans-switch/
 │   │   ├── pusher.go                # streams heartbeats
 │   │   ├── responder.go             # gRPC server for Ping
 │   │   └── chaos.go                 # crash/lag/drop injection
-│   └── log/
-│       └── jsonlog.go               # structured event log → file (for plots)
+│   └── eventlog/
+│       └── eventlog.go              # structured event log → file (for plots)
 ├── scripts/
 │   ├── run_demo.sh                  # spin up monitor + 5 workers locally
 │   ├── bench_push_pull.sh           # benchmark for paper
@@ -449,19 +449,26 @@ References
 The Monitor renders a live table to stdout via `bubbletea`, refreshed every `--eval-interval`:
 
 ```
-┌─ Dead Man's Switch — Monitor ─────────────────────────────────────────────┐
-│ Mode: push   Detector: phi   Workers: 5   Uptime: 00:02:14                │
-├──────────────┬─────────┬──────────┬─────────┬─────────┬───────────────────┤
-│ Worker       │ State   │ Last HB  │ Phi     │ μ (ms)  │ σ (ms)            │
-├──────────────┼─────────┼──────────┼─────────┼─────────┼───────────────────┤
-│ worker-1     │ ALIVE   │  0.4s    │  0.02   │ 1003.2  │  18.7             │
-│ worker-2     │ ALIVE   │  0.7s    │  0.05   │ 1008.1  │  22.4             │
-│ worker-3     │ MISSING │  4.2s    │  2.31   │ 1001.0  │  19.0             │
-│ worker-4     │ DEAD    │ 18.9s    │  ∞      │ 1004.0  │  20.1             │
-│ worker-5     │ ALIVE   │  0.2s    │  0.01   │ 1000.5  │  17.3             │
-└──────────────┴─────────┴──────────┴─────────┴─────────┴───────────────────┘
-[q] quit   [p] toggle push/pull   [d] toggle detector   [l] dump events.jsonl
+┌─ Dead Man's Switch — Monitor ───────────────────┐
+│ Mode: push   Detector: phi   Workers: 5         │
+│ Uptime: 00:02:14                                │
+├──────────────┬─────────┬──────────┬─────────────┤
+│ Worker       │ State   │ Last HB  │ Suspicion   │
+├──────────────┼─────────┼──────────┼─────────────┤
+│ worker-1     │ ALIVE   │  0.4s    │  0.02       │
+│ worker-2     │ ALIVE   │  0.7s    │  0.05       │
+│ worker-3     │ MISSING │  4.2s    │  2.31       │
+│ worker-4     │ DEAD    │ 18.9s    │  1e9        │
+│ worker-5     │ ALIVE   │  0.2s    │  0.01       │
+└──────────────┴─────────┴──────────┴─────────────┘
+[q] quit
 ```
+
+The TUI shows a single `Suspicion` column. The underlying μ and σ from the
+Phi sliding window are exposed via `(*PhiAccrual).stats(workerID)` for tests
+but are intentionally not surfaced in the TUI to keep rows scannable. Inf is
+clamped to `1e9` everywhere downstream of the detector (see §7.1) so the log
+and TUI never see a literal `∞`.
 
 Color: ALIVE = green, MISSING = yellow, DEAD = red.
 
@@ -487,12 +494,13 @@ sleep 1
 
 # Workers register with both monitors. --monitor= is the push target;
 # --pull-monitors= is a comma-list of monitors that will Register & poll us.
-COMMON="--monitor=localhost:50051 --pull-monitors=localhost:50052 --listen-base=50061"
-./worker --id=worker-1 $COMMON &
-./worker --id=worker-2 $COMMON &
-./worker --id=worker-3 $COMMON --chaos-kill-after=20s &
-./worker --id=worker-4 $COMMON --chaos-lag-mean=2500ms --chaos-lag-stddev=1000ms &
-./worker --id=worker-5 $COMMON &
+# Each worker binds an explicit --listen=:5006N (no shared base flag).
+COMMON="--monitor=localhost:50051 --pull-monitors=localhost:50052"
+./worker --id=worker-1 $COMMON --listen=:50061 &
+./worker --id=worker-2 $COMMON --listen=:50062 &
+./worker --id=worker-3 $COMMON --listen=:50063 --chaos-kill-after=20s &
+./worker --id=worker-4 $COMMON --listen=:50064 --chaos-lag-mean=2500ms --chaos-lag-stddev=1000ms &
+./worker --id=worker-5 $COMMON --listen=:50065 &
 wait
 ```
 
