@@ -7,6 +7,7 @@ package eventlog
 import (
 	"encoding/json"
 	"io"
+	"math"
 	"sync"
 	"time"
 )
@@ -47,14 +48,21 @@ type envelope struct {
 
 // Event writes a single record. ts is the wall-clock time used in the "ts"
 // field; the caller is expected to pass time.Now().UTC() in production.
+//
+// Inf/NaN suspicion values are coerced to a large finite sentinel (1e9) so
+// json.Marshal does not error and silently drop the line — Phi can return
+// +Inf when an arrival is many σ past μ.
 func (l *Logger) Event(ts time.Time, e Event) {
+	if math.IsInf(e.Suspicion, 0) || math.IsNaN(e.Suspicion) {
+		e.Suspicion = 1e9
+	}
 	env := envelope{
 		TS:    ts.UTC().Format(time.RFC3339Nano),
 		Event: e,
 	}
 	b, err := json.Marshal(env)
 	if err != nil {
-		return // unreachable: Event has only marshalable types
+		return
 	}
 	l.mu.Lock()
 	defer l.mu.Unlock()
