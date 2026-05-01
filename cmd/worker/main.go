@@ -107,11 +107,15 @@ func mustRegister(ctx context.Context, client deadmanv1.HeartbeatClient, id, add
 	}
 }
 
-// localizeAddr converts ":50061" to "127.0.0.1:50061" so the Monitor has a
-// dialable addr for pull mode.
+// localizeAddr converts ":50061" or "0.0.0.0:50061" to "127.0.0.1:50061" so
+// the Monitor has a dialable addr for pull mode. (Workers and Monitor are
+// expected to share a host in this design — multi-host is out of scope.)
 func localizeAddr(listen string) string {
 	if strings.HasPrefix(listen, ":") {
 		return "127.0.0.1" + listen
+	}
+	if strings.HasPrefix(listen, "0.0.0.0:") {
+		return "127.0.0.1" + listen[len("0.0.0.0"):]
 	}
 	return listen
 }

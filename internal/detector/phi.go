@@ -77,6 +77,11 @@ func (p *PhiAccrual) Heartbeat(workerID string, arrival time.Time) {
 	p.fallback.Heartbeat(workerID, arrival)
 }
 
+// Suspicion locks just long enough to snapshot mu/sigma/last, then releases
+// before the (allocation-free, math-only) phi computation. A Heartbeat that
+// lands between the snapshot and the return is intentionally not reflected in
+// this verdict; the next eval tick will see it. That is fine: Suspicion is
+// idempotent and the evaluator runs every --eval-interval.
 func (p *PhiAccrual) Suspicion(workerID string, now time.Time) (float64, State) {
 	p.mu.Lock()
 	st, ok := p.workers[workerID]

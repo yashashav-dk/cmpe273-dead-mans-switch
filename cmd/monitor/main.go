@@ -132,7 +132,10 @@ func runPullers(ctx context.Context, reg *monitor.Registry, det detector.Detecto
 					detForPoller = discardDetector{}
 				}
 				p := monitor.NewPoller(client, w.ID, reg, detForPoller, logger, interval, timeout)
-				go p.Run(ctx)
+				go func() {
+					defer conn.Close()
+					p.Run(ctx)
+				}()
 				started[w.ID] = struct{}{}
 			}
 		}

@@ -5,6 +5,7 @@ package worker
 
 import (
 	"math/rand"
+	"sync"
 	"time"
 )
 
@@ -18,11 +19,13 @@ type ChaosConfig struct {
 	CrashAfter time.Duration // exit(0) after this duration; zero means never
 }
 
-// Chaos is the runtime controller. SampleLag/ShouldDrop call into the rng
-// without locking; callers are expected to invoke from a single goroutine
-// (the pusher loop or the responder handler).
+// Chaos is the runtime controller. cmd/worker shares one *Chaos across the
+// pusher loop and the gRPC Ping responder (each Ping runs on its own goroutine
+// inside the gRPC server), so SampleLag/ShouldDrop must serialize access to
+// the embedded *rand.Rand — math/rand.Rand is not goroutine-safe.
 type Chaos struct {
 	cfg     ChaosConfig
+	mu      sync.Mutex
 	rng     *rand.Rand
 	started time.Time
 }
@@ -44,7 +47,10 @@ func (c *Chaos) SampleLag() time.Duration {
 	if c.cfg.LagMean == 0 && c.cfg.LagStddev == 0 {
 		return 0
 	}
-	d := time.Duration(c.rng.NormFloat64()*float64(c.cfg.LagStddev)) + c.cfg.LagMean
+	c.mu.Lock()
+	r := c.rng.NormFloat64()
+	c.mu.Unlock()
+	d := time.Duration(r*float64(c.cfg.LagStddev)) + c.cfg.LagMean
 	if d < 0 {
 		return 0
 	}
@@ -59,7 +65,10 @@ func (c *Chaos) ShouldDrop() bool {
 	if c.cfg.DropRate >= 1 {
 		return true
 	}
-	return c.rng.Float64() < c.cfg.DropRate
+	c.mu.Lock()
+	r := c.rng.Float64()
+	c.mu.Unlock()
+	return r < c.cfg.DropRate
 }
 
 // ShouldKill reports whether a hard exit(1) should fire by the given moment.
